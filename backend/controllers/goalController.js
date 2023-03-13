@@ -35,10 +35,8 @@ const updateGoal = async (req, res) => {
       res.status(400);
       throw new Error("Goal not found");
     }
-
-    const user = await User.findById(req.user.id);
-    if (!user) throw new Error("User not found");
-    if (goal.user.toString() !== user.id)
+    if (!req.user) throw new Error("User not found");
+    if (goal.user.toString() !== req.user.id)
       throw new Error("User not authorized");
 
     const updatedGoal = await Goal.findByIdAndUpdate(goalId, updateText, {
@@ -65,9 +63,8 @@ const deleteGoal = async (req, res) => {
       throw new Error("Goal not found");
     }
 
-    const user = await User.findById(req.user.id);
-    if (!user) throw new Error("User not found");
-    if (goal.user.toString() !== user.id)
+    if (!req.user) throw new Error("User not found");
+    if (goal.user.toString() !== req.user.id)
       throw new Error("User not authorized");
 
     await Goal.findByIdAndDelete(goalId);

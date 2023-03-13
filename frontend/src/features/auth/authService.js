@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_URL = "http://localhost:8000/api/users/";
+const API_URL = "https://goals-api.cyclic.app/api/users/";
 
 // REGISTER USER
 const register = async (userData) => {

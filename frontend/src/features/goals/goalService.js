@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_URL = "http://localhost:8000/api/goals/";
+const API_URL = "https://goals-api.cyclic.app/api/goals/";
 
 // CREATE NEW GOAL
 const createGoal = async (goalData, token) => {

@@ -1,10 +1,11 @@
 const Goal = require("../models/goalModel");
+const User = require("../models/userModel");
 
 // @desc    Get Goals
 // @route   GET /api/goals
 // @access  Private
 const getGoals = async (req, res) => {
-  const goals = await Goal.find();
+  const goals = await Goal.find({ user: req.user.id });
   res.status(200).json({ message: "Get goals", data: goals });
 };
 
@@ -18,7 +19,7 @@ const setGoal = async (req, res) => {
     throw new Error("please enter a text field");
   }
 
-  const goal = await Goal.create({ text });
+  const goal = await Goal.create({ text, user: req.user.id });
   res.status(201).json({ message: "Goal created", data: goal });
 };
 
@@ -26,35 +27,54 @@ const setGoal = async (req, res) => {
 // @route   PUT api/goals/:id
 // @access  Private
 const updateGoal = async (req, res) => {
-  const goalId = req.params.id;
-  const updateText = req.body;
-  const goal = await Goal.findById(goalId);
-  if (!goal) {
-    res.status(400);
-    throw new Error("Goal not found");
-  }
+  try {
+    const goalId = req.params.id;
+    const updateText = req.body;
+    const goal = await Goal.findById(goalId);
+    if (!goal) {
+      res.status(400);
+      throw new Error("Goal not found");
+    }
 
-  const updatedGoal = await Goal.findByIdAndUpdate(goalId, updateText, {
-    new: true,
-  });
-  res
-    .status(200)
-    .json({ message: `Goal Updated successfully`, data: updatedGoal });
+    const user = await User.findById(req.user.id);
+    if (!user) throw new Error("User not found");
+    if (goal.user.toString() !== user.id)
+      throw new Error("User not authorized");
+
+    const updatedGoal = await Goal.findByIdAndUpdate(goalId, updateText, {
+      new: true,
+    });
+    res
+      .status(200)
+      .json({ message: `Goal Updated successfully`, data: updatedGoal });
+  } catch (error) {
+    console.log(error);
+    res.status(401).json({ error: error.message });
+  }
 };
 
 // @desc    Delete Goal
 // @route   DELETE api/goal/:id
 // @access  Private
 const deleteGoal = async (req, res) => {
-  const goalId = req.params.id;
-  const goal = await Goal.findById(goalId);
-  if (!goal) {
-    res.status(400);
-    throw new Error("Goal not found");
-  }
+  try {
+    const goalId = req.params.id;
+    const goal = await Goal.findById(goalId);
+    if (!goal) {
+      res.status(400);
+      throw new Error("Goal not found");
+    }
 
-  await Goal.findByIdAndDelete(goalId);
-  res.status(200).json({ message: "Goal deleted successfully", id: goalId });
+    const user = await User.findById(req.user.id);
+    if (!user) throw new Error("User not found");
+    if (goal.user.toString() !== user.id)
+      throw new Error("User not authorized");
+
+    await Goal.findByIdAndDelete(goalId);
+    res.status(200).json({ message: "Goal deleted successfully", id: goalId });
+  } catch (error) {
+    res.status(401).json({ error: error.message });
+  }
 };
 
 module.exports = {
